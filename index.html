@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Google API Speech-to-Text Sample with Language Selection</title>
+</head>
+
+<body>
+  <h1>Google API Speech-to-Text Sample with Language Selection</h1>
+  <p>Click the button below to start recording, and stop recording when you're done speaking.</p>
+
+  <button id="startButton" onclick="startRecording()">Start Recording</button>
+  <button id="stopButton" onclick="stopRecording()">Stop Recording</button>
+
+  <div>
+    <div>
+      <label for="selectLanguage">Select Language:</label>
+      <select id="selectLanguage" onchange="updateLang(this.value)">
+        <option value="en-US">English (US)</option>
+        <option value="en-GB">English (UK)</option>
+        <option value="fr-FR">Français</option>
+        <option value="es-ES">Español</option>
+      </select>
+    </div>
+
+    <div id="results">
+      <p id="recognized-text"></p>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    // Replace YOUR_API_KEY with your actual API key
+    const API_KEY = "YOUR_API_KEY";
+
+    let recognition;
+    let finalTranscript = '';
+    let recognizing = false;
+    let lang = 'en-US';
+
+    function startRecording() {
+      recognition = new webkitSpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = lang;
+
+      recognition.onstart = function() {
+        recognizing = true;
+      };
+
+      recognition.onerror = function(event) {
+        console.error(event.error);
+      };
+
+      recognition.onend = function() {
+        recognizing = false;
+      };
+
+      recognition.onresult = function(event) {
+        let interimTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          let transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+
+        document.getElementById("recognized-text").innerHTML = finalTranscript + interimTranscript;
+      };
+
+      recognition.start();
+    }
+
+    function stopRecording() {
+      recognition.stop();
+    }
+
+    function updateLang(selectedLang) {
+      lang = selectedLang;
+      if (recognizing) {
+        recognition.stop();
+        recognition.lang = lang;
+        recognition.start();
+      }
+    }
+  </script>
+
+  <script src=`https://apis.google.com/js/api.js?key=${API_KEY}&amp;callback=onLoad` async defer></script>
+</body>
+</html>
